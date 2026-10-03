@@ -13,7 +13,7 @@ export default function AppSidebarLayout({
             <AppSidebar />
             <AppContent variant="sidebar" className="min-w-0 overflow-x-clip">
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
-                {children}
+                <main className="p-6">{children}</main>
             </AppContent>
         </AppShell>
     );

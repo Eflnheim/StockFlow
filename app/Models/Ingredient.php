@@ -24,7 +24,10 @@ class Ingredient extends Model
 
     public function category(): BelongsTo
     {
-        return $this->belongsTo(IngredientCategory::class);
+        return $this->belongsTo(
+            IngredientCategory::class,
+            'ingredient_category_id'
+        );
     }
 
     public function unit(): BelongsTo
@@ -35,6 +38,11 @@ class Ingredient extends Model
     public function stockMovements(): HasMany
     {
         return $this->hasMany(StockMovement::class);
+    }
+
+    public function purchaseItems(): HasMany
+    {
+        return $this->hasMany(PurchaseItem::class);
     }
 
     public function recipes(): BelongsToMany

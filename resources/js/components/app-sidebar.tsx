@@ -1,7 +1,18 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import {
+    ChartNoAxesCombined,
+    ChefHat,
+    ClipboardList,
+    Database,
+    LayoutDashboard,
+    Receipt,
+    Scale,
+    ShoppingCart,
+    Tags,
+    Truck,
+    Wheat,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -20,20 +31,54 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
-        icon: LayoutGrid,
-    },
-];
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
+        icon: LayoutDashboard,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
+        title: 'Master Data',
+        href: '#',
+        icon: Database,
+        items: [
+            {
+                title: 'Ingredients',
+                href: '/ingredients',
+            },
+            {
+                title: 'Categories',
+                href: '/ingredient-categories',
+            },
+            {
+                title: 'Units',
+                href: '/units',
+            },
+            {
+                title: 'Suppliers',
+                href: '/suppliers',
+            },
+        ],
+    },
+    {
+        title: 'Operations',
+        href: '#',
+        icon: ClipboardList,
+        items: [
+            {
+                title: 'Purchases',
+                href: '/purchase-orders',
+            },
+            {
+                title: 'Recipes',
+                href: '/recipes',
+            },
+            {
+                title: 'Sales',
+                href: '/sales',
+            },
+        ],
+    },
+    {
+        title: 'Reports',
+        href: '/reports',
+        icon: ChartNoAxesCombined,
     },
 ];
 
@@ -57,7 +102,6 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
