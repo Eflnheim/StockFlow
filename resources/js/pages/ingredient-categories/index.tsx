@@ -1,7 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
-
+import { usePermissions } from '@/hooks/use-permissions';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -13,10 +13,6 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-} from '@/components/ui/card';
 import {
     Table,
     TableBody,
@@ -54,6 +50,12 @@ export default function Index({ categories }: Props) {
         });
     };
 
+    const { can } = usePermissions();
+
+    const canManageCategories =
+        can('update', 'ingredient-categories') ||
+        can('delete', 'ingredient-categories');
+
     return (
         <>
             <Head title="Ingredient Categories" />
@@ -71,76 +73,81 @@ export default function Index({ categories }: Props) {
                         </p>
                     </div>
 
-                    <Button asChild>
-                        <Link href="/ingredient-categories/create">
-                            <Plus />
-                            Add Category
-                        </Link>
-                    </Button>
+                    {can('create', 'ingredient-categories') && (
+                        <Button asChild>
+                            <Link href="/ingredient-categories/create">
+                                <Plus />
+                                Add Category
+                            </Link>
+                        </Button>
+                    )}
                 </div>
 
                 {/* Categories Card */}
-                <Card className="py-2">
-                    <CardContent>
-                        {categories.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
-                                <div className="mb-4 rounded-full bg-muted p-3">
-                                    <Plus className="size-5 text-muted-foreground" />
-                                </div>
+                {categories.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
+                        <div className="mb-4 rounded-full bg-muted p-3">
+                            <Plus className="size-5 text-muted-foreground" />
+                        </div>
 
-                                <h3 className="font-medium">
-                                    No categories yet
-                                </h3>
+                        <h3 className="font-medium">
+                            No categories yet
+                        </h3>
 
-                                <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-                                    Create your first ingredient category to
-                                    start organizing your inventory.
-                                </p>
+                        <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+                            Create your first ingredient category to
+                            start organizing your inventory.
+                        </p>
 
-                                <Button asChild className="mt-4">
-                                    <Link href="/ingredient-categories/create">
-                                        <Plus />
-                                        Add Category
-                                    </Link>
-                                </Button>
-                            </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="w-16 font-semibold text-foreground">
-                                                #
-                                            </TableHead>
+                        {can('create', 'ingredient-categories') && (
+                            <Button asChild>
+                                <Link href="/ingredient-categories/create">
+                                    <Plus />
+                                    Add Category
+                                </Link>
+                            </Button>
+                        )}
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-16 font-semibold text-foreground">
+                                        #
+                                    </TableHead>
 
-                                            <TableHead className="font-semibold text-foreground">
-                                                Category
-                                            </TableHead>
+                                    <TableHead className="font-semibold text-foreground">
+                                        Category
+                                    </TableHead>
 
-                                            <TableHead className="text-right font-semibold text-foreground">
-                                                Actions
-                                            </TableHead>
-                                        </TableRow>
-                                    </TableHeader>
+                                    {canManageCategories && (
+                                        <TableHead className="text-right font-semibold text-foreground">
+                                            Actions
+                                        </TableHead>
+                                    )}
+                                </TableRow>
+                            </TableHeader>
 
-                                    <TableBody>
-                                        {categories.map(
-                                            (category, index) => (
-                                                <TableRow key={category.id}>
-                                                    <TableCell className="text-muted-foreground">
-                                                        {index + 1}
-                                                    </TableCell>
+                            <TableBody>
+                                {categories.map(
+                                    (category, index) => (
+                                        <TableRow key={category.id}>
+                                            <TableCell className="text-muted-foreground">
+                                                {index + 1}
+                                            </TableCell>
 
-                                                    <TableCell>
-                                                        <div className="flex items-center gap-3">
-                                                            <span className="font-medium">
-                                                                {category.name}
-                                                            </span>
-                                                        </div>
-                                                    </TableCell>
-
-                                                    <TableCell>
-                                                        <div className="flex justify-end gap-2">
+                                            <TableCell>
+                                                <div className="flex items-center gap-3">
+                                                    <span className="font-medium">
+                                                        {category.name}
+                                                    </span>
+                                                </div>
+                                            </TableCell>
+                                            {canManageCategories && (
+                                                <TableCell>
+                                                    <div className="flex justify-end gap-2">
+                                                        {can('update', 'ingredient-categories') && (
                                                             <Button
                                                                 asChild
                                                                 variant="outline"
@@ -155,16 +162,16 @@ export default function Index({ categories }: Props) {
                                                                     </span>
                                                                 </Link>
                                                             </Button>
+                                                        )}
 
+                                                        {can('delete', 'ingredient-categories') && (
                                                             <Button
                                                                 type="button"
                                                                 variant="outline"
                                                                 size="sm"
                                                                 className="text-destructive hover:text-destructive"
                                                                 onClick={() =>
-                                                                    setCategoryToDelete(
-                                                                        category,
-                                                                    )
+                                                                    setCategoryToDelete(category)
                                                                 }
                                                             >
                                                                 <Trash2 />
@@ -172,17 +179,17 @@ export default function Index({ categories }: Props) {
                                                                     Delete
                                                                 </span>
                                                             </Button>
-                                                        </div>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ),
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                            )}
+                                        </TableRow>
+                                    ),
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
 
                 {/* Delete Confirmation */}
                 <AlertDialog

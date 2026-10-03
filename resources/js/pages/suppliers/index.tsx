@@ -1,17 +1,8 @@
 import { Head, Link, useForm } from '@inertiajs/react';
+import { FormEvent, useState } from 'react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
 import { usePermissions } from '@/hooks/use-permissions';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -22,88 +13,101 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 
-interface Unit {
+interface Supplier {
     id: number;
     name: string;
-    symbol: string;
+    contact_person: string | null;
+    phone: string | null;
+    email: string | null;
+    address: string | null;
+    is_active: boolean;
 }
 
 interface Props {
-    units: Unit[];
+    suppliers: Supplier[];
 }
 
-export default function Index({ units }: Props) {
+export default function Index({ suppliers }: Props) {
+    const [supplierToDelete, setSupplierToDelete] =
+        useState<Supplier | null>(null);
+
     const { delete: destroy, processing } = useForm();
 
-    const [unitToDelete, setUnitToDelete] = useState<Unit | null>(null);
+    const handleDelete = (event: FormEvent) => {
+        event.preventDefault();
 
-    const handleDelete = () => {
-        if (!unitToDelete) {
+        if (!supplierToDelete) {
             return;
         }
 
-        destroy(`/units/${unitToDelete.id}`, {
-            onSuccess: () => {
-                setUnitToDelete(null);
-            },
+        destroy(`/suppliers/${supplierToDelete.id}`, {
+            onFinish: () => setSupplierToDelete(null),
         });
     };
 
     const { can } = usePermissions();
 
-    const canManageUnits =
-        can('update', 'units') ||
-        can('delete', 'units');
+    const canManageSuppliers =
+        can('update', 'suppliers') || can('delete', 'suppliers');
 
     return (
         <>
-            <Head title="Units" />
+            <Head title="Suppliers" />
 
             <div className="space-y-6">
                 {/* Page Header */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold tracking-tight">
-                            Units
+                            Suppliers
                         </h1>
 
                         <p className="mt-1 text-sm text-muted-foreground">
-                            Manage the units used to measure ingredients.
+                            Manage the suppliers that provide ingredients.
                         </p>
                     </div>
 
-                    {can('create', 'units') && (
+                    {can('create', 'suppliers') && (
                         <Button asChild>
-                            <Link href="/units/create">
+                            <Link href="/suppliers/create">
                                 <Plus />
-                                Add Unit
+                                Add Supplier
                             </Link>
                         </Button>
                     )}
                 </div>
 
-                {/* Units Card */}
-                {units.length === 0 ? (
+                {/* Supplier List */}
+                {suppliers.length === 0 ? (
                     <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
                         <div className="mb-4 rounded-full bg-muted p-3">
                             <Plus className="size-5 text-muted-foreground" />
                         </div>
 
                         <h3 className="font-medium">
-                            No units yet
+                            No suppliers yet
                         </h3>
 
                         <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-                            Create your first unit to start measuring
-                            ingredients in your inventory.
+                            Add your first supplier to start managing
+                            ingredient purchases.
                         </p>
 
-                        {can('create', 'units') && (
+                        {can('create', 'suppliers') && (
                             <Button asChild>
-                                <Link href="/units/create">
+                                <Link href="/suppliers/create">
                                     <Plus />
-                                    Add Unit
+                                    Add Supplier
                                 </Link>
                             </Button>
                         )}
@@ -118,14 +122,22 @@ export default function Index({ units }: Props) {
                                     </TableHead>
 
                                     <TableHead className="font-semibold text-foreground">
-                                        Unit
+                                        Supplier
                                     </TableHead>
 
                                     <TableHead className="font-semibold text-foreground">
-                                        Symbol
+                                        Contact
                                     </TableHead>
 
-                                    {canManageUnits && (
+                                    <TableHead className="font-semibold text-foreground">
+                                        Email
+                                    </TableHead>
+
+                                    <TableHead className="font-semibold text-foreground">
+                                        Status
+                                    </TableHead>
+
+                                    {canManageSuppliers && (
                                         <TableHead className="text-right font-semibold text-foreground">
                                             Actions
                                         </TableHead>
@@ -134,34 +146,64 @@ export default function Index({ units }: Props) {
                             </TableHeader>
 
                             <TableBody>
-                                {units.map((unit, index) => (
-                                    <TableRow key={unit.id}>
+                                {suppliers.map((supplier, index) => (
+                                    <TableRow key={supplier.id}>
                                         <TableCell className="text-muted-foreground">
                                             {index + 1}
                                         </TableCell>
 
                                         <TableCell>
-                                            <span className="font-medium">
-                                                {unit.name}
-                                            </span>
+                                            <div className="flex items-center gap-3">
+                                                <span className="font-medium">
+                                                    {supplier.name}
+                                                </span>
+                                            </div>
                                         </TableCell>
 
                                         <TableCell>
-                                            <Badge variant="secondary" className="font-mono">
-                                                {unit.symbol}
+                                            <div>
+                                                <p>
+                                                    {supplier.contact_person ?? '-'}
+                                                </p>
+
+                                                {supplier.phone && (
+                                                    <p className="text-sm text-muted-foreground">
+                                                        {supplier.phone}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </TableCell>
+
+                                        <TableCell className="text-muted-foreground">
+                                            {supplier.email ?? '-'}
+                                        </TableCell>
+
+                                        <TableCell>
+                                            <Badge
+                                                variant={
+                                                    supplier.is_active
+                                                        ? 'default'
+                                                        : 'outline'
+                                                }
+                                            >
+                                                {supplier.is_active
+                                                    ? 'Active'
+                                                    : 'Inactive'}
                                             </Badge>
                                         </TableCell>
 
-                                        {canManageUnits && (
+                                        {canManageSuppliers && (
                                             <TableCell>
                                                 <div className="flex justify-end gap-2">
-                                                    {can('update', 'units') && (
+                                                    {can('update', 'suppliers') && (
                                                         <Button
                                                             asChild
                                                             variant="outline"
                                                             size="sm"
                                                         >
-                                                            <Link href={`/units/${unit.id}/edit`}>
+                                                            <Link
+                                                                href={`/suppliers/${supplier.id}/edit`}
+                                                            >
                                                                 <Pencil />
                                                                 <span className="hidden sm:inline">
                                                                     Edit
@@ -170,13 +212,17 @@ export default function Index({ units }: Props) {
                                                         </Button>
                                                     )}
 
-                                                    {can('delete', 'units') && (
+                                                    {can('delete', 'suppliers') && (
                                                         <Button
                                                             type="button"
                                                             variant="outline"
                                                             size="sm"
                                                             className="text-destructive hover:text-destructive"
-                                                            onClick={() => setUnitToDelete(unit)}
+                                                            onClick={() =>
+                                                                setSupplierToDelete(
+                                                                    supplier,
+                                                                )
+                                                            }
                                                         >
                                                             <Trash2 />
                                                             <span className="hidden sm:inline">
@@ -194,27 +240,27 @@ export default function Index({ units }: Props) {
                     </div>
                 )}
 
-
                 {/* Delete Confirmation */}
                 <AlertDialog
-                    open={unitToDelete !== null}
+                    open={!!supplierToDelete}
                     onOpenChange={(open) => {
-                        if (!open && !processing) {
-                            setUnitToDelete(null);
+                        if (!open) {
+                            setSupplierToDelete(null);
                         }
                     }}
                 >
                     <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle>
-                                Delete unit?
+                                Delete supplier?
                             </AlertDialogTitle>
 
                             <AlertDialogDescription>
-                                Are you sure you want to delete{' '}
-                                <strong>{unitToDelete?.name}</strong> (
-                                {unitToDelete?.symbol})? This action cannot be
-                                undone.
+                                This will permanently delete{' '}
+                                <span className="font-medium">
+                                    {supplierToDelete?.name}
+                                </span>
+                                . This action cannot be undone.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
 
@@ -224,9 +270,8 @@ export default function Index({ units }: Props) {
                             </AlertDialogCancel>
 
                             <AlertDialogAction
-                                disabled={processing}
                                 onClick={handleDelete}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                disabled={processing}
                             >
                                 {processing ? 'Deleting...' : 'Delete'}
                             </AlertDialogAction>
