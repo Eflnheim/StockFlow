@@ -78,6 +78,7 @@ const mainNavItems: NavItem[] = [
                 title: 'Recipes',
                 href: '/recipes',
             },
+            { title: 'Customers', href: '/customers' },
             {
                 title: 'Sales',
                 href: '/sales',
