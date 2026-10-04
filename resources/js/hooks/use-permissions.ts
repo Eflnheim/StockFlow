@@ -8,7 +8,8 @@ type PermissionResource =
     | 'ingredient-categories'
     | 'units'
     | 'ingredients'
-    | 'suppliers';
+    | 'suppliers'
+    | 'purchase-orders';
 
 const permissions: Record<
     PermissionAction,
@@ -19,18 +20,23 @@ const permissions: Record<
         units: ['Admin', 'Purchasing'],
         ingredients: ['Admin', 'Purchasing'],
         suppliers: ['Admin', 'Purchasing'],
+        'purchase-orders': ['Admin', 'Purchasing'],
     },
+
     update: {
         'ingredient-categories': ['Admin', 'Purchasing'],
         units: ['Admin', 'Purchasing'],
         ingredients: ['Admin', 'Purchasing'],
         suppliers: ['Admin', 'Purchasing'],
+        'purchase-orders': ['Admin', 'Purchasing'],
     },
+
     delete: {
         'ingredient-categories': ['Admin', 'Purchasing'],
         units: ['Admin', 'Purchasing'],
         ingredients: ['Admin', 'Purchasing'],
         suppliers: ['Admin', 'Purchasing'],
+        'purchase-orders': ['Admin', 'Purchasing'],
     },
 };
 

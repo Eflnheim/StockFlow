@@ -1,16 +1,10 @@
 import { Link } from '@inertiajs/react';
 import {
     ChartNoAxesCombined,
-    ChefHat,
     ClipboardList,
     Database,
     LayoutDashboard,
-    Receipt,
-    Scale,
-    ShoppingCart,
-    Tags,
-    Truck,
-    Wheat,
+    Warehouse,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -53,6 +47,21 @@ const mainNavItems: NavItem[] = [
             {
                 title: 'Suppliers',
                 href: '/suppliers',
+            },
+        ],
+    },
+    {
+        title: 'Inventory',
+        href: '#',
+        icon: Warehouse,
+        items: [
+            {
+                title: 'Overview',
+                href: '/inventory',
+            },
+            {
+                title: 'Stock Movements',
+                href: '/inventory/movements',
             },
         ],
     },
