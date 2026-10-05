@@ -1,6 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEvent } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import type { Unit } from '@/types/ingredients';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -18,12 +19,6 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
-
-interface Unit {
-    id: number;
-    name: string;
-    symbol: string;
-}
 
 interface Props {
     unit: Unit;

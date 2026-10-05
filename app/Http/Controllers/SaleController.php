@@ -101,9 +101,16 @@ class SaleController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Sale $sale): Response
+    public function edit(Sale $sale): Response|RedirectResponse
     {
         $this->authorize('update', $sale);
+
+        if ($sale->status !== 'pending') {
+            return Inertia::flash('toast', [
+                'type' => 'error',
+                'message' => 'Only pending sales can be edited.',
+            ])->back();
+        }
 
         $customers = Customer::query()
             ->where('is_active', true)
@@ -124,6 +131,13 @@ class SaleController extends Controller
         Sale $sale
     ): RedirectResponse {
         $this->authorize('update', $sale);
+
+        if ($sale->status !== 'pending') {
+            return Inertia::flash('toast', [
+                'type' => 'error',
+                'message' => 'Only pending sales can be edited.',
+            ])->back();
+        }
 
         $sale->update(
             $request->validated()

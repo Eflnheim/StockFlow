@@ -1,9 +1,9 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { useState } from 'react';
-import { Eye, Pencil, Plus, Trash2 } from 'lucide-react';
+import { FormEvent, useState } from 'react';
+import { Eye, Pencil, Plus, Trash2, CircleCheck } from 'lucide-react';
+import { usePermissions } from '@/hooks/use-permissions';
+import type { PurchaseOrder } from '@/types/purchase-orders';
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -14,6 +14,8 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
     Table,
     TableBody,
@@ -22,37 +24,39 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { usePermissions } from '@/hooks/use-permissions';
+import { Spinner } from '@/components/ui/spinner';
 
-type Supplier = {
-    id: number;
-    name: string;
-};
-
-type PurchaseOrder = {
-    id: number;
-    supplier: Supplier;
-    order_number: string;
-    order_date: string;
-    status: 'pending' | 'received' | 'cancelled';
-    notes: string | null;
-};
+import { PageHeader } from '@/components/page-header';
 
 type Props = {
     purchaseOrders: PurchaseOrder[];
 };
 
 export default function Index({ purchaseOrders }: Props) {
+    const { delete: destroy, processing } = useForm();
+
+    const [purchaseOrderToDelete, setPurchaseOrderToDelete] =
+        useState<PurchaseOrder | null>(null);
+
+    const handleDelete = (event: FormEvent) => {
+        event.preventDefault();
+
+        if (!purchaseOrderToDelete) {
+            return;
+        }
+
+        destroy(`/purchase-orders/${purchaseOrderToDelete.id}`, {
+            onSuccess: () => {
+                setPurchaseOrderToDelete(null);
+            },
+        });
+    }
+
     const { can } = usePermissions();
 
     const canManagePurchaseOrders =
         can('update', 'purchase-orders') ||
         can('delete', 'purchase-orders');
-
-    const { delete: destroy } = useForm();
-
-    const [purchaseOrderToDelete, setPurchaseOrderToDelete] =
-        useState<PurchaseOrder | null>(null);
 
     return (
         <>
@@ -60,17 +64,10 @@ export default function Index({ purchaseOrders }: Props) {
 
             <div className="space-y-6">
                 {/* Page Header */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-2xl font-semibold tracking-tight">
-                            Purchase Orders
-                        </h1>
-
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            Manage ingredient purchases from your suppliers.
-                        </p>
-                    </div>
-
+                <PageHeader
+                    title="Purchase Orders"
+                    description="Manage ingredient purchases from suppliers."
+                >
                     {can('create', 'purchase-orders') && (
                         <Button asChild>
                             <Link href="/purchase-orders/create">
@@ -79,7 +76,7 @@ export default function Index({ purchaseOrders }: Props) {
                             </Link>
                         </Button>
                     )}
-                </div>
+                </PageHeader>
 
                 {/* Purchase Order List */}
                 {purchaseOrders.length === 0 ? (
@@ -180,13 +177,14 @@ export default function Index({ purchaseOrders }: Props) {
 
                                             <TableCell>
                                                 <Badge
+                                                    className="w-16 text-center"
                                                     variant={
                                                         purchaseOrder.status ===
                                                             'pending'
                                                             ? 'secondary'
                                                             : purchaseOrder.status ===
                                                                 'received'
-                                                                ? 'default'
+                                                                ? 'success'
                                                                 : 'outline'
                                                     }
                                                 >
@@ -298,20 +296,12 @@ export default function Index({ purchaseOrders }: Props) {
                         </AlertDialogCancel>
 
                         <AlertDialogAction
+                            onClick={handleDelete}
+                            disabled={processing}
                             variant="destructive"
-                            onClick={() => {
-                                if (!purchaseOrderToDelete) {
-                                    return;
-                                }
-
-                                destroy(
-                                    `/purchase-orders/${purchaseOrderToDelete.id}`,
-                                );
-
-                                setPurchaseOrderToDelete(null);
-                            }}
                         >
-                            Delete
+                            {processing && <Spinner />}
+                            {processing ? 'Deleting' : 'Delete'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

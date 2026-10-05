@@ -25,30 +25,34 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import type { CustomerSummary } from '@/types/customers';
+import type { Sale } from '@/types/sales';
 
 type Props = {
+    sale: Sale & {
+        notes: string | null;
+    };
     customers: CustomerSummary[];
 };
 
-export default function Create({ customers }: Props) {
-    const { data, setData, post, processing, errors } =
+export default function Edit({ sale, customers }: Props) {
+    const { data, setData, put, processing, errors } =
         useForm({
-            customer_id: '',
-            sale_date: new Date()
-                .toISOString()
-                .slice(0, 16),
-            notes: '',
+            customer_id: sale.customer
+                ? String(sale.customer.id)
+                : '',
+            sale_date: sale.sale_date.slice(0, 16),
+            notes: sale.notes ?? '',
         });
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
 
-        post('/sales');
+        put(`/sales/${sale.id}`);
     };
 
     return (
         <>
-            <Head title="New Sale" />
+            <Head title={`Edit ${sale.invoice_number}`} />
 
             <div className="mx-auto max-w-2xl space-y-6">
                 <Button
@@ -57,19 +61,20 @@ export default function Create({ customers }: Props) {
                     size="sm"
                     className="-ml-2"
                 >
-                    <Link href="/sales">
+                    <Link href={`/sales/${sale.id}`}>
                         <ArrowLeft />
-                        Back to Sales
+                        Back to Sale
                     </Link>
                 </Button>
 
                 <div>
                     <h1 className="text-2xl font-semibold tracking-tight">
-                        New Sale
+                        Edit Sale
                     </h1>
 
                     <p className="mt-1 text-sm text-muted-foreground">
-                        Start a new customer sale.
+                        Update the basic information for{' '}
+                        {sale.invoice_number}.
                     </p>
                 </div>
 
@@ -78,8 +83,9 @@ export default function Create({ customers }: Props) {
                         <CardTitle>Sale Details</CardTitle>
 
                         <CardDescription>
-                            Enter the basic information for this sale.
-                            Items can be added after creating it.
+                            Update the customer, sale date, or notes.
+                            Sale items can be managed from the sale
+                            details page.
                         </CardDescription>
                     </CardHeader>
 
@@ -88,8 +94,11 @@ export default function Create({ customers }: Props) {
                             onSubmit={submit}
                             className="space-y-6"
                         >
+                            {/* Customer */}
                             <Field
-                                data-invalid={!!errors.customer_id}
+                                data-invalid={
+                                    !!errors.customer_id
+                                }
                             >
                                 <FieldLabel htmlFor="customer_id">
                                     Customer
@@ -140,8 +149,11 @@ export default function Create({ customers }: Props) {
                                 </FieldError>
                             </Field>
 
+                            {/* Sale Date */}
                             <Field
-                                data-invalid={!!errors.sale_date}
+                                data-invalid={
+                                    !!errors.sale_date
+                                }
                             >
                                 <FieldLabel htmlFor="sale_date">
                                     Sale Date
@@ -157,7 +169,9 @@ export default function Create({ customers }: Props) {
                                             event.target.value,
                                         )
                                     }
-                                    aria-invalid={!!errors.sale_date}
+                                    aria-invalid={
+                                        !!errors.sale_date
+                                    }
                                 />
 
                                 <FieldError>
@@ -165,6 +179,7 @@ export default function Create({ customers }: Props) {
                                 </FieldError>
                             </Field>
 
+                            {/* Notes */}
                             <Field
                                 data-invalid={!!errors.notes}
                             >
@@ -197,7 +212,9 @@ export default function Create({ customers }: Props) {
                                     type="button"
                                     variant="outline"
                                 >
-                                    <Link href="/sales">
+                                    <Link
+                                        href={`/sales/${sale.id}`}
+                                    >
                                         Cancel
                                     </Link>
                                 </Button>
@@ -207,7 +224,7 @@ export default function Create({ customers }: Props) {
                                     disabled={processing}
                                 >
                                     {processing && <Spinner />}
-                                    Create Sale
+                                    Save Changes
                                 </Button>
                             </div>
                         </form>

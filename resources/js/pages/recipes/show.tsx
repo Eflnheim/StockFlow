@@ -1,24 +1,13 @@
-import { Head, Link, useForm } from '@inertiajs/react';
-import {
-    ArrowLeft,
-    Pencil,
-    Plus,
-    Trash2,
-} from 'lucide-react';
+import { Head, Link } from '@inertiajs/react';
+import { ArrowLeft, Pencil, Plus } from 'lucide-react';
 import { useState } from 'react';
+import { usePermissions } from '@/hooks/use-permissions';
+import type {
+    RecipeAvailableIngredient,
+    RecipeIngredient,
+    RecipeWithIngredients,
+} from '@/types/recipes';
 
-import { RecipeIngredientDialog } from '@/pages/recipes/components/recipe-ingredient-dialog';
-import { RecipeIngredientEditDialog } from '@/pages/recipes/components/recipe-ingredient-edit-dialog';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,47 +17,14 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import { usePermissions } from '@/hooks/use-permissions';
 
-type Ingredient = {
-    id: number;
-    name: string;
-    unit: {
-        symbol: string;
-    };
-    pivot: {
-        quantity: string;
-    };
-};
-
-type AvailableIngredient = {
-    id: number;
-    name: string;
-    unit: {
-        symbol: string;
-    };
-};
-
-type Recipe = {
-    id: number;
-    name: string;
-    selling_price: string;
-    is_active: boolean;
-    description: string | null;
-    ingredients: Ingredient[];
-};
+import { RecipeIngredientDialog } from '@/pages/recipes/components/recipe-ingredient-dialog';
+import { RecipeIngredientEditDialog } from '@/pages/recipes/components/recipe-ingredient-edit-dialog';
+import RecipeIngredientTable from '@/pages/recipes/components/recipe-ingredient-table';
 
 type Props = {
-    recipe: Recipe;
-    ingredients: AvailableIngredient[];
+    recipe: RecipeWithIngredients;
+    ingredients: RecipeAvailableIngredient[];
 };
 
 function formatCurrency(value: number): string {
@@ -91,17 +47,9 @@ export default function Show({
         useState(false);
 
     const [ingredientToEdit, setIngredientToEdit] =
-        useState<Ingredient | null>(null);
+        useState<RecipeIngredient | null>(null);
 
-    const [ingredientToDelete, setIngredientToDelete] =
-        useState<Ingredient | null>(null);
-
-    const {
-        delete: destroy,
-        processing: deleteProcessing,
-    } = useForm();
-
-    const openEditDialog = (ingredient: Ingredient) => {
+    const openEditDialog = (ingredient: RecipeIngredient) => {
         setIngredientToEdit(ingredient);
     };
 
@@ -116,6 +64,7 @@ export default function Show({
             <Head title={recipe.name} />
 
             <div className="space-y-6">
+                {/* Back */}
                 <Button
                     asChild
                     variant="ghost"
@@ -128,24 +77,13 @@ export default function Show({
                     </Link>
                 </Button>
 
+                {/* Page Header */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                         <div className="flex flex-wrap items-center gap-3">
                             <h1 className="text-2xl font-semibold tracking-tight">
                                 {recipe.name}
                             </h1>
-
-                            <Badge
-                                variant={
-                                    recipe.is_active
-                                        ? 'secondary'
-                                        : 'outline'
-                                }
-                            >
-                                {recipe.is_active
-                                    ? 'Active'
-                                    : 'Inactive'}
-                            </Badge>
                         </div>
 
                         <p className="mt-1 text-sm text-muted-foreground">
@@ -159,19 +97,16 @@ export default function Show({
                                 href={`/recipes/${recipe.id}/edit`}
                             >
                                 <Pencil />
-                                Edit Recipe
+                                Edit
                             </Link>
                         </Button>
                     )}
                 </div>
 
+                {/* Recipe Details */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Recipe Details</CardTitle>
-
-                        <CardDescription>
-                            Basic information about this recipe.
-                        </CardDescription>
                     </CardHeader>
 
                     <CardContent>
@@ -181,7 +116,7 @@ export default function Show({
                                     Selling Price
                                 </p>
 
-                                <p className="mt-1 text-lg font-semibold">
+                                <p className="mt-1 font-medium">
                                     {formatCurrency(
                                         Number(
                                             recipe.selling_price,
@@ -195,19 +130,11 @@ export default function Show({
                                     Status
                                 </p>
 
-                                <div className="mt-2">
-                                    <Badge
-                                        variant={
-                                            recipe.is_active
-                                                ? 'secondary'
-                                                : 'outline'
-                                        }
-                                    >
-                                        {recipe.is_active
-                                            ? 'Active'
-                                            : 'Inactive'}
-                                    </Badge>
-                                </div>
+                                <p  className="mt-1 font-medium">
+                                    {recipe.is_active
+                                        ? 'Active'
+                                        : 'Inactive'}
+                                </p>
                             </div>
 
                             {recipe.description && (
@@ -216,7 +143,7 @@ export default function Show({
                                         Description
                                     </p>
 
-                                    <p className="mt-1 text-sm">
+                                    <p className="mt-1 whitespace-pre-wrap font-medium">
                                         {recipe.description}
                                     </p>
                                 </div>
@@ -225,6 +152,7 @@ export default function Show({
                     </CardContent>
                 </Card>
 
+                {/* Recipe Ingredients */}
                 <Card>
                     <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div>
@@ -240,6 +168,7 @@ export default function Show({
 
                         {canEdit && (
                             <Button
+                                type="button"
                                 onClick={() =>
                                     setIngredientDialogOpen(true)
                                 }
@@ -282,125 +211,18 @@ export default function Show({
                                 )}
                             </div>
                         ) : (
-                            <div className="overflow-x-auto">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="w-16 font-semibold text-foreground">
-                                                #
-                                            </TableHead>
-
-                                            <TableHead className="font-semibold text-foreground">
-                                                Ingredient
-                                            </TableHead>
-
-                                            <TableHead className="text-right font-semibold text-foreground">
-                                                Quantity
-                                            </TableHead>
-
-                                            <TableHead className="font-semibold text-foreground">
-                                                Unit
-                                            </TableHead>
-
-                                            {canEdit && (
-                                                <TableHead className="text-right font-semibold text-foreground">
-                                                    Actions
-                                                </TableHead>
-                                            )}
-                                        </TableRow>
-                                    </TableHeader>
-
-                                    <TableBody>
-                                        {recipe.ingredients.map(
-                                            (
-                                                ingredient,
-                                                index,
-                                            ) => (
-                                                <TableRow
-                                                    key={
-                                                        ingredient.id
-                                                    }
-                                                >
-                                                    <TableCell className="text-muted-foreground">
-                                                        {index + 1}
-                                                    </TableCell>
-
-                                                    <TableCell className="font-medium">
-                                                        {
-                                                            ingredient.name
-                                                        }
-                                                    </TableCell>
-
-                                                    <TableCell className="text-right">
-                                                        {Number(
-                                                            ingredient
-                                                                .pivot
-                                                                .quantity,
-                                                        )}
-                                                    </TableCell>
-
-                                                    <TableCell>
-                                                        <Badge
-                                                            variant="secondary"
-                                                            className="font-mono"
-                                                        >
-                                                            {
-                                                                ingredient
-                                                                    .unit
-                                                                    .symbol
-                                                            }
-                                                        </Badge>
-                                                    </TableCell>
-
-                                                    {canEdit && (
-                                                        <TableCell>
-                                                            <div className="flex justify-end gap-2">
-                                                                <Button
-                                                                    type="button"
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    onClick={() =>
-                                                                        openEditDialog(
-                                                                            ingredient,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <Pencil />
-                                                                    <span className="hidden sm:inline">
-                                                                        Edit
-                                                                    </span>
-                                                                </Button>
-
-                                                                <Button
-                                                                    type="button"
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    className="text-destructive hover:text-destructive"
-                                                                    onClick={() =>
-                                                                        setIngredientToDelete(
-                                                                            ingredient,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <Trash2 />
-                                                                    <span className="hidden sm:inline">
-                                                                        Delete
-                                                                    </span>
-                                                                </Button>
-                                                            </div>
-                                                        </TableCell>
-                                                    )}
-                                                </TableRow>
-                                            ),
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </div>
+                            <RecipeIngredientTable
+                                recipeId={recipe.id}
+                                ingredients={recipe.ingredients}
+                                canEdit={canEdit}
+                                onEdit={openEditDialog}
+                            />
                         )}
                     </CardContent>
                 </Card>
             </div>
 
+            {/* Add Ingredient Dialog */}
             <RecipeIngredientDialog
                 recipeId={recipe.id}
                 ingredients={ingredients}
@@ -408,66 +230,13 @@ export default function Show({
                 onOpenChange={setIngredientDialogOpen}
             />
 
+            {/* Edit Ingredient Dialog */}
             <RecipeIngredientEditDialog
                 recipeId={recipe.id}
                 ingredient={ingredientToEdit}
                 open={ingredientToEdit !== null}
                 onOpenChange={closeEditDialog}
             />
-
-            <AlertDialog
-                open={ingredientToDelete !== null}
-                onOpenChange={(open) => {
-                    if (!open) {
-                        setIngredientToDelete(null);
-                    }
-                }}
-            >
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            Remove ingredient?
-                        </AlertDialogTitle>
-
-                        <AlertDialogDescription>
-                            This will remove{' '}
-                            <span className="font-medium text-foreground">
-                                {ingredientToDelete?.name}
-                            </span>{' '}
-                            from this recipe. This action cannot be
-                            undone.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>
-                            Cancel
-                        </AlertDialogCancel>
-
-                        <AlertDialogAction
-                            variant="destructive"
-                            disabled={deleteProcessing}
-                            onClick={() => {
-                                if (!ingredientToDelete) {
-                                    return;
-                                }
-
-                                destroy(
-                                    `/recipes/${recipe.id}/ingredients/${ingredientToDelete.id}`,
-                                );
-
-                                setIngredientToDelete(null);
-                            }}
-                        >
-                            {deleteProcessing ? (
-                                'Removing...'
-                            ) : (
-                                'Remove Ingredient'
-                            )}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
         </>
     );
 }

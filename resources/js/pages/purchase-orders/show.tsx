@@ -1,9 +1,13 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { usePermissions } from '@/hooks/use-permissions';
+import type {
+    PurchaseItem,
+    PurchaseOrder,
+} from '@/types/purchase-orders';
+import type { Ingredient } from '@/types/ingredients';
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -14,55 +18,18 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { usePermissions } from '@/hooks/use-permissions';
 
-import PurchaseItemDialog from './components/purchase-item-dialog';
-import PurchaseItemTable from './components/purchase-item-table';
-
-type Supplier = {
-    id: number;
-    name: string;
-};
-
-type User = {
-    id: number;
-    name: string;
-};
-
-type Ingredient = {
-    id: number;
-    name: string;
-    unit: {
-        id: number;
-        name: string;
-        symbol: string;
-    };
-};
-
-type PurchaseItem = {
-    id: number;
-    quantity: string;
-    unit_price: string;
-    ingredient: Ingredient;
-};
-
-type PurchaseOrder = {
-    id: number;
-    supplier: Supplier;
-    user: User;
-    order_number: string;
-    order_date: string;
-    status: 'pending' | 'received' | 'cancelled';
-    notes: string | null;
-    created_at: string;
-    items: PurchaseItem[];
-};
+import PurchaseItemCreateDialog from '@/pages/purchase-orders/components/purchase-item-create-dialog';
+import PurchaseItemEditDialog from '@/pages/purchase-orders/components/purchase-item-edit-dialog';
+import PurchaseItemTable from '@/pages/purchase-orders/components/purchase-item-table';
 
 type Props = {
     purchaseOrder: PurchaseOrder;
@@ -87,15 +54,22 @@ function formatDateTime(date: string): string {
     });
 }
 
+const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        maximumFractionDigits: 0,
+    }).format(value);
+
 function getStatusVariant(
     status: PurchaseOrder['status'],
-): 'default' | 'secondary' | 'outline' {
+): 'success' | 'secondary' | 'outline' {
     if (status === 'pending') {
         return 'secondary';
     }
 
     if (status === 'received') {
-        return 'default';
+        return 'success';
     }
 
     return 'outline';
@@ -185,6 +159,7 @@ export default function Show({
                                 variant={getStatusVariant(
                                     purchaseOrder.status,
                                 )}
+                                className="px-3 py-1 text-sm"
                             >
                                 {purchaseOrder.status
                                     .charAt(0)
@@ -356,7 +331,7 @@ export default function Show({
                         {purchaseOrder.status === 'pending' &&
                             purchaseOrder.items.length > 0 &&
                             canUpdate && (
-                                <div className="mt-6 flex justify-end border-t pt-6">
+                                <div className="mt-3 flex justify-end border-t pt-4">
                                     <Button
                                         type="button"
                                         onClick={() => setReceiveDialogOpen(true)}
@@ -370,11 +345,21 @@ export default function Show({
             </div>
 
             {/* Add / Edit Purchase Item Dialog */}
-            <PurchaseItemDialog
+            <PurchaseItemCreateDialog
                 purchaseOrderId={purchaseOrder.id}
                 ingredients={ingredients}
+                open={itemDialogOpen && itemToEdit === null}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        closeItemDialog(false);
+                    }
+                }}
+            />
+
+            <PurchaseItemEditDialog
+                purchaseOrderId={purchaseOrder.id}
                 item={itemToEdit}
-                open={itemDialogOpen}
+                open={itemDialogOpen && itemToEdit !== null}
                 onOpenChange={closeItemDialog}
             />
 
@@ -430,24 +415,62 @@ export default function Show({
                         </AlertDialogTitle>
 
                         <AlertDialogDescription>
-                            This will add all purchase item quantities to inventory
-                            and mark{' '}
-                            <span className="font-medium text-foreground">
-                                {purchaseOrder.order_number}
-                            </span>{' '}
-                            as received. Once received, this purchase order can no
-                            longer be edited.
+                            This will add the listed quantities to inventory.
+                            This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
+
+                    <div className="rounded-lg border">
+                        <div className="divide-y">
+                            {purchaseOrder.items.map((item) => (
+                                <div
+                                    key={item.id}
+                                    className="flex items-center justify-between gap-4 px-4 py-3 text-sm"
+                                >
+                                    <span className="font-medium">
+                                        {item.ingredient.name}
+                                    </span>
+
+                                    <div className="flex items-center gap-4 text-muted-foreground">
+                                        <span>
+                                            {Number(item.quantity)}{' '}
+                                            {item.ingredient.unit.symbol}
+                                        </span>
+
+                                        <span className="min-w-24 text-right font-medium text-foreground">
+                                            {formatCurrency(
+                                                Number(item.quantity) *
+                                                Number(item.unit_price),
+                                            )}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="flex items-center justify-between border-t px-4 py-3">
+                            <span className="font-semibold">Total</span>
+
+                            <span className="font-semibold">
+                                {formatCurrency(
+                                    purchaseOrder.items.reduce(
+                                        (total, item) =>
+                                            total +
+                                            Number(item.quantity) *
+                                            Number(item.unit_price),
+                                        0,
+                                    ),
+                                )}
+                            </span>
+                        </div>
+                    </div>
 
                     <AlertDialogFooter>
                         <AlertDialogCancel>
                             Cancel
                         </AlertDialogCancel>
 
-                        <AlertDialogAction
-                            onClick={receivePurchaseOrder}
-                        >
+                        <AlertDialogAction onClick={receivePurchaseOrder}>
                             Receive Purchase Order
                         </AlertDialogAction>
                     </AlertDialogFooter>

@@ -1,6 +1,8 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Eye, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { usePermissions } from '@/hooks/use-permissions';
+import type { Recipe } from '@/types/recipes';
 
 import {
     AlertDialog,
@@ -22,15 +24,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { usePermissions } from '@/hooks/use-permissions';
-
-type Recipe = {
-    id: number;
-    name: string;
-    selling_price: string;
-    is_active: boolean;
-    description: string | null;
-};
+import { PageHeader } from '@/components/page-header';
 
 type Props = {
     recipes: Recipe[];
@@ -63,18 +57,11 @@ export default function Index({ recipes }: Props) {
             <Head title="Recipes" />
 
             <div className="space-y-6">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                        <h1 className="text-2xl font-semibold tracking-tight">
-                            Recipes
-                        </h1>
-
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            Manage menu recipes and their ingredient
-                            compositions.
-                        </p>
-                    </div>
-
+                {/* Page Header */}
+                <PageHeader
+                    title="Recipes"
+                    description="Manage menu recipes and their ingredient compositions."
+                >
                     {canCreate && (
                         <Button asChild>
                             <Link href="/recipes/create">
@@ -83,7 +70,7 @@ export default function Index({ recipes }: Props) {
                             </Link>
                         </Button>
                     )}
-                </div>
+                </PageHeader>
 
                 {recipes.length === 0 ? (
                     <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
@@ -113,7 +100,7 @@ export default function Index({ recipes }: Props) {
                                         Recipe
                                     </TableHead>
 
-                                    <TableHead className="text-right font-semibold text-foreground">
+                                    <TableHead className="font-semibold text-foreground">
                                         Selling Price
                                     </TableHead>
 
@@ -142,17 +129,17 @@ export default function Index({ recipes }: Props) {
                                                     {recipe.name}
                                                 </div>
 
-                                                {recipe.description && (
+                                                {/* {recipe.description && (
                                                     <div className="mt-1 max-w-md truncate text-sm text-muted-foreground">
                                                         {
                                                             recipe.description
                                                         }
                                                     </div>
-                                                )}
+                                                )} */}
                                             </div>
                                         </TableCell>
 
-                                        <TableCell className="text-right font-medium">
+                                        <TableCell className="font-medium">
                                             {formatCurrency(
                                                 Number(
                                                     recipe.selling_price,
@@ -162,9 +149,10 @@ export default function Index({ recipes }: Props) {
 
                                         <TableCell>
                                             <Badge
+                                                className='w-15 text-center'
                                                 variant={
                                                     recipe.is_active
-                                                        ? 'secondary'
+                                                        ? 'default'
                                                         : 'outline'
                                                 }
                                             >

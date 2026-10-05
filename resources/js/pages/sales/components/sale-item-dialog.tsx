@@ -24,16 +24,11 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
-
-type Recipe = {
-    id: number;
-    name: string;
-    selling_price: string;
-};
+import type { SaleRecipe } from '@/types/sales';
 
 type Props = {
     saleId: number;
-    recipes: Recipe[];
+    recipes: SaleRecipe[];
     open: boolean;
     onOpenChange: (open: boolean) => void;
 };

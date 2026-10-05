@@ -24,18 +24,11 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
-
-type Ingredient = {
-    id: number;
-    name: string;
-    unit: {
-        symbol: string;
-    };
-};
+import type { RecipeAvailableIngredient } from '@/types/recipes';
 
 type Props = {
     recipeId: number;
-    ingredients: Ingredient[];
+    ingredients: RecipeAvailableIngredient[];
     open: boolean;
     onOpenChange: (open: boolean) => void;
 };
@@ -128,9 +121,7 @@ export function RecipeIngredientDialog({
                                 {ingredients.map(
                                     (ingredient) => (
                                         <SelectItem
-                                            key={
-                                                ingredient.id
-                                            }
+                                            key={ingredient.id}
                                             value={String(
                                                 ingredient.id,
                                             )}

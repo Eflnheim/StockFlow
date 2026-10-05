@@ -13,7 +13,6 @@ import {
 import {
     Field,
     FieldError,
-    FieldGroup,
     FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
@@ -102,7 +101,6 @@ export default function Create() {
                                         }
                                         placeholder="e.g. Fresh Food Supplier"
                                         aria-invalid={!!errors.name}
-                                        autoFocus
                                     />
 
                                     {errors.name && (

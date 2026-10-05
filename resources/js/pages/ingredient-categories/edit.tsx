@@ -1,6 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEvent } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import type { IngredientCategory } from '@/types/ingredients';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -18,13 +19,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 
-interface Category {
-    id: number;
-    name: string;
-}
-
 interface Props {
-    category: Category;
+    category: IngredientCategory;
 }
 
 export default function Edit({ category }: Props) {

@@ -1,6 +1,10 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { FormEvent } from 'react';
+import type {
+    IngredientCategory,
+    Unit,
+} from '@/types/ingredients';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -17,7 +21,6 @@ import {
     FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Spinner } from '@/components/ui/spinner';
 import {
     Select,
     SelectContent,
@@ -25,20 +28,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-
-interface Category {
-    id: number;
-    name: string;
-}
-
-interface Unit {
-    id: number;
-    name: string;
-    symbol: string;
-}
+import { Spinner } from '@/components/ui/spinner';
 
 interface Props {
-    categories: Category[];
+    categories: IngredientCategory[];
     units: Unit[];
 }
 
@@ -53,7 +46,6 @@ export default function Create({ categories, units }: Props) {
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
-
         post('/ingredients');
     };
 
@@ -80,7 +72,7 @@ export default function Create({ categories, units }: Props) {
                         </h1>
 
                         <p className="text-muted-foreground">
-                            Add a new ingredient to your inventory.
+                            Add a new ingredient to the inventory.
                         </p>
                     </div>
                 </div>

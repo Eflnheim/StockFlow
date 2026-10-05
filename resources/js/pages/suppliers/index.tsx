@@ -2,7 +2,8 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEvent, useState } from 'react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { usePermissions } from '@/hooks/use-permissions';
-import { Button } from '@/components/ui/button';
+import type { Supplier } from '@/types/suppliers';
+
 import {
     AlertDialog,
     AlertDialogAction,
@@ -14,6 +15,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
     Table,
     TableBody,
@@ -22,26 +24,19 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { Spinner } from '@/components/ui/spinner';
 
-interface Supplier {
-    id: number;
-    name: string;
-    contact_person: string | null;
-    phone: string | null;
-    email: string | null;
-    address: string | null;
-    is_active: boolean;
-}
+import { PageHeader } from '@/components/page-header';
 
 interface Props {
     suppliers: Supplier[];
 }
 
 export default function Index({ suppliers }: Props) {
+    const { delete: destroy, processing } = useForm();
+
     const [supplierToDelete, setSupplierToDelete] =
         useState<Supplier | null>(null);
-
-    const { delete: destroy, processing } = useForm();
 
     const handleDelete = (event: FormEvent) => {
         event.preventDefault();
@@ -51,14 +46,16 @@ export default function Index({ suppliers }: Props) {
         }
 
         destroy(`/suppliers/${supplierToDelete.id}`, {
-            onFinish: () => setSupplierToDelete(null),
+            onSuccess: () =>
+                setSupplierToDelete(null),
         });
     };
 
     const { can } = usePermissions();
 
     const canManageSuppliers =
-        can('update', 'suppliers') || can('delete', 'suppliers');
+        can('update', 'suppliers') ||
+        can('delete', 'suppliers');
 
     return (
         <>
@@ -66,17 +63,10 @@ export default function Index({ suppliers }: Props) {
 
             <div className="space-y-6">
                 {/* Page Header */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-2xl font-semibold tracking-tight">
-                            Suppliers
-                        </h1>
-
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            Manage the suppliers that provide ingredients.
-                        </p>
-                    </div>
-
+                <PageHeader
+                    title="Suppliers"
+                    description="Manage the suppliers that provide ingredients."
+                >
                     {can('create', 'suppliers') && (
                         <Button asChild>
                             <Link href="/suppliers/create">
@@ -85,7 +75,7 @@ export default function Index({ suppliers }: Props) {
                             </Link>
                         </Button>
                     )}
-                </div>
+                </PageHeader>
 
                 {/* Supplier List */}
                 {suppliers.length === 0 ? (
@@ -180,6 +170,7 @@ export default function Index({ suppliers }: Props) {
 
                                         <TableCell>
                                             <Badge
+                                                className="w-15 text-center"
                                                 variant={
                                                     supplier.is_active
                                                         ? 'default'
@@ -272,8 +263,10 @@ export default function Index({ suppliers }: Props) {
                             <AlertDialogAction
                                 onClick={handleDelete}
                                 disabled={processing}
+                                variant="destructive"
                             >
-                                {processing ? 'Deleting...' : 'Delete'}
+                                {processing && <Spinner />}
+                                {processing ? 'Deleting' : 'Delete'}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>

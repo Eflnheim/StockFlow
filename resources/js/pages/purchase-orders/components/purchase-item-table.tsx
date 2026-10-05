@@ -1,6 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import type { PurchaseItem } from '@/types/purchase-orders';
 
 import {
     AlertDialog,
@@ -21,21 +22,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-
-type PurchaseItem = {
-    id: number;
-    quantity: string;
-    unit_price: string;
-    ingredient: {
-        id: number;
-        name: string;
-        unit: {
-            id: number;
-            name: string;
-            symbol: string;
-        };
-    };
-};
 
 type Props = {
     purchaseOrderId: number;
@@ -124,7 +110,7 @@ export default function PurchaseItemTable({
 
                                         <TableCell>
                                             {formatNumber(quantity)}{' '}
-                                            <span className="font-normal">
+                                            <span>
                                                 {item.ingredient.unit.symbol}
                                             </span>
                                         </TableCell>

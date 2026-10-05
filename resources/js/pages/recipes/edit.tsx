@@ -1,5 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
+import type { Recipe } from '@/types/recipes';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -15,7 +16,6 @@ import {
     FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Spinner } from '@/components/ui/spinner';
 import {
     Select,
     SelectContent,
@@ -23,30 +23,22 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
-
-type Recipe = {
-    id: number;
-    name: string;
-    selling_price: string;
-    is_active: boolean;
-    description: string | null;
-};
 
 type Props = {
     recipe: Recipe;
 };
 
 export default function Edit({ recipe }: Props) {
-    const { data, setData, put, processing, errors } =
-        useForm({
-            name: recipe.name,
-            selling_price: String(
-                Number(recipe.selling_price),
-            ),
-            is_active: recipe.is_active ? '1' : '0',
-            description: recipe.description ?? '',
-        });
+    const { data, setData, put, processing, errors } = useForm({
+        name: recipe.name,
+        selling_price: String(
+            Number(recipe.selling_price),
+        ),
+        is_active: recipe.is_active ? '1' : '0',
+        description: recipe.description ?? '',
+    });
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
@@ -59,28 +51,29 @@ export default function Edit({ recipe }: Props) {
             <Head title={`Edit ${recipe.name}`} />
 
             <div className="mx-auto max-w-2xl space-y-6">
-                <Button
-                    asChild
-                    variant="ghost"
-                    size="sm"
-                    className="-ml-2"
-                >
-                    <Link href={`/recipes/${recipe.id}`}>
-                        <ArrowLeft />
-                        Back to Recipe
-                    </Link>
-                </Button>
+                {/* Page Header */}
+                <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="icon" asChild>
+                        <Link href={`/recipes/${recipe.id}`}>
+                            <ArrowLeft />
+                            <span className="sr-only">
+                                Back to Recipe
+                            </span>
+                        </Link>
+                    </Button>
 
-                <div>
-                    <h1 className="text-2xl font-semibold tracking-tight">
-                        Edit Recipe
-                    </h1>
+                    <div>
+                        <h1 className="text-2xl font-semibold tracking-tight">
+                            Edit Recipe
+                        </h1>
 
-                    <p className="mt-1 text-sm text-muted-foreground">
-                        Update the basic information for this recipe.
-                    </p>
+                        <p className="text-muted-foreground">
+                            Update the details for this recipe.
+                        </p>
+                    </div>
                 </div>
 
+                {/* Form Card */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Recipe Details</CardTitle>
@@ -247,7 +240,10 @@ export default function Edit({ recipe }: Props) {
                                     disabled={processing}
                                 >
                                     {processing && <Spinner />}
-                                    Save Changes
+
+                                    {processing
+                                        ? 'Saving'
+                                        : 'Save'}
                                 </Button>
                             </div>
                         </form>

@@ -18,21 +18,11 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
-
-type Ingredient = {
-    id: number;
-    name: string;
-    unit: {
-        symbol: string;
-    };
-    pivot: {
-        quantity: string;
-    };
-};
+import type { RecipeIngredient } from '@/types/recipes';
 
 type Props = {
     recipeId: number;
-    ingredient: Ingredient | null;
+    ingredient: RecipeIngredient | null;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 };

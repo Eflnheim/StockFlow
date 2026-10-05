@@ -1,6 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import type { Supplier } from '@/types/suppliers';
+import type { PurchaseOrder } from '@/types/purchase-orders';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -25,52 +26,54 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 
-type Props = {
+interface Props {
+    purchaseOrder: PurchaseOrder;
     suppliers: Supplier[];
-};
+}
 
-export default function Create({ suppliers }: Props) {
-    const today = new Date();
-    const localDate = [
-        today.getFullYear(),
-        String(today.getMonth() + 1).padStart(2, '0'),
-        String(today.getDate()).padStart(2, '0'),
-    ].join('-');
-    const { data, setData, post, processing, errors } = useForm({
-        supplier_id: '',
-        order_date: localDate,
-        notes: '',
+export default function Edit({
+    purchaseOrder,
+    suppliers,
+}: Props) {
+    const { data, setData, put, processing, errors } = useForm({
+        supplier_id: String(purchaseOrder.supplier_id),
+        order_date: purchaseOrder.order_date.slice(0, 10),
+        notes: purchaseOrder.notes ?? '',
     });
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
 
-        post('/purchase-orders');
+        put(`/purchase-orders/${purchaseOrder.id}`);
     };
 
     return (
         <>
-            <Head title="Create Purchase Order" />
+            <Head title={`Edit ${purchaseOrder.order_number}`} />
 
             <div className="mx-auto max-w-2xl space-y-6">
                 {/* Page Header */}
                 <div className="flex items-center gap-3">
                     <Button variant="ghost" size="icon" asChild>
-                        <Link href="/purchase-orders">
+                        <Link href={`/purchase-orders`}>
                             <ArrowLeft />
                             <span className="sr-only">
-                                Back to purchase orders
+                                Back to purchase order
                             </span>
                         </Link>
                     </Button>
 
                     <div>
                         <h1 className="text-2xl font-semibold tracking-tight">
-                            Create Purchase Order
+                            Edit Purchase Order
                         </h1>
 
                         <p className="text-muted-foreground">
-                            Create a new purchase order for your supplier.
+                            Update the details for{' '}
+                            <span className="font-medium text-foreground">
+                                {purchaseOrder.order_number}
+                            </span>
+                            .
                         </p>
                     </div>
                 </div>
@@ -81,7 +84,7 @@ export default function Create({ suppliers }: Props) {
                         <CardTitle>Purchase Order Details</CardTitle>
 
                         <CardDescription>
-                            Enter the supplier and basic information for this
+                            Update the supplier and basic information for this
                             purchase order.
                         </CardDescription>
                     </CardHeader>
@@ -187,7 +190,9 @@ export default function Create({ suppliers }: Props) {
                                     variant="outline"
                                     asChild
                                 >
-                                    <Link href="/purchase-orders">
+                                    <Link
+                                        href={`/purchase-orders/${purchaseOrder.id}`}
+                                    >
                                         Cancel
                                     </Link>
                                 </Button>
@@ -198,9 +203,7 @@ export default function Create({ suppliers }: Props) {
                                 >
                                     {processing && <Spinner />}
 
-                                    {processing
-                                        ? 'Saving'
-                                        : 'Save'}
+                                    {processing ? 'Saving' : 'Save'}
                                 </Button>
                             </div>
                         </form>

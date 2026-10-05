@@ -15,7 +15,6 @@ import {
     FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Spinner } from '@/components/ui/spinner';
 import {
     Select,
     SelectContent,
@@ -23,16 +22,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 
 export default function Create() {
-    const { data, setData, post, processing, errors } =
-        useForm({
-            name: '',
-            selling_price: '',
-            is_active: '1',
-            description: '',
-        });
+    const { data, setData, post, processing, errors } = useForm({
+        name: '',
+        selling_price: '',
+        is_active: '1',
+        description: '',
+    });
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
@@ -45,28 +44,29 @@ export default function Create() {
             <Head title="Create Recipe" />
 
             <div className="mx-auto max-w-2xl space-y-6">
-                <Button
-                    asChild
-                    variant="ghost"
-                    size="sm"
-                    className="-ml-2"
-                >
-                    <Link href="/recipes">
-                        <ArrowLeft />
-                        Back to Recipes
-                    </Link>
-                </Button>
+                {/* Page Header */}
+                <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="icon" asChild>
+                        <Link href="/recipes">
+                            <ArrowLeft />
+                            <span className="sr-only">
+                                Back to Recipes
+                            </span>
+                        </Link>
+                    </Button>
 
-                <div>
-                    <h1 className="text-2xl font-semibold tracking-tight">
-                        Create Recipe
-                    </h1>
+                    <div>
+                        <h1 className="text-2xl font-semibold tracking-tight">
+                            Create Recipe
+                        </h1>
 
-                    <p className="mt-1 text-sm text-muted-foreground">
-                        Add a new menu recipe.
-                    </p>
+                        <p className="text-muted-foreground">
+                            Create a new recipe for your menu.
+                        </p>
+                    </div>
                 </div>
 
+                {/* Form Card */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Recipe Details</CardTitle>
@@ -231,7 +231,10 @@ export default function Create() {
                                     disabled={processing}
                                 >
                                     {processing && <Spinner />}
-                                    Create Recipe
+
+                                    {processing
+                                        ? 'Saving'
+                                        : 'Save'}
                                 </Button>
                             </div>
                         </form>

@@ -52,7 +52,7 @@ export default function Create() {
                         </h1>
 
                         <p className="text-muted-foreground">
-                            Add a new measurement unit for your ingredients.
+                            Add a new measurement unit for ingredients.
                         </p>
                     </div>
                 </div>

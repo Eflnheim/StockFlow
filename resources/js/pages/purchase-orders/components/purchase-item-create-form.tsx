@@ -1,5 +1,5 @@
 import { useForm } from '@inertiajs/react';
-import { Plus, Save } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -16,44 +16,24 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-
-type Ingredient = {
-    id: number;
-    name: string;
-    unit: {
-        id: number;
-        name: string;
-        symbol: string;
-    };
-};
-
-type PurchaseItem = {
-    id: number;
-    ingredient: Ingredient;
-    quantity: string;
-    unit_price: string;
-};
+import type { Ingredient } from '@/types/ingredients';
 
 type Props = {
     purchaseOrderId: number;
     ingredients: Ingredient[];
-    item?: PurchaseItem | null;
     onSuccess?: () => void;
 };
 
-export default function PurchaseItemForm({
+export default function PurchaseItemCreateForm({
     purchaseOrderId,
     ingredients,
-    item = null,
     onSuccess,
 }: Props) {
-    const isEditing = item !== null;
-
-    const { data, setData, post, put, processing, errors, reset } =
+    const { data, setData, post, processing, errors, reset } =
         useForm({
-            ingredient_id: item ? String(item.ingredient.id) : '',
-            quantity: item ? String(Number(item.quantity)) : '',
-            unit_price: item ? String(Number(item.unit_price)) : '',
+            ingredient_id: '',
+            quantity: '',
+            unit_price: '',
         });
 
     const selectedIngredient = ingredients.find(
@@ -64,77 +44,72 @@ export default function PurchaseItemForm({
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
 
-        const options = {
+        post(`/purchase-orders/${purchaseOrderId}/items`, {
             onSuccess: () => {
                 reset();
                 onSuccess?.();
             },
-        };
-
-        if (isEditing) {
-            put(
-                `/purchase-orders/${purchaseOrderId}/items/${item.id}`,
-                options,
-            );
-
-            return;
-        }
-
-        post(
-            `/purchase-orders/${purchaseOrderId}/items`,
-            options,
-        );
+        });
     };
 
     return (
         <form onSubmit={submit} className="space-y-6">
-            {/* Ingredient */}
-            <Field data-invalid={!!errors.ingredient_id}>
-                <FieldLabel htmlFor="ingredient_id">
-                    Ingredient
-                </FieldLabel>
+            {/* Ingredient + Unit */}
+            <div className="grid gap-6 md:grid-cols-[1fr_140px]">
+                <Field data-invalid={!!errors.ingredient_id}>
+                    <FieldLabel htmlFor="ingredient_id">
+                        Ingredient
+                    </FieldLabel>
 
-                <Select
-                    value={data.ingredient_id}
-                    onValueChange={(value) =>
-                        setData('ingredient_id', value)
-                    }
-                >
-                    <SelectTrigger
-                        id="ingredient_id"
-                        aria-invalid={!!errors.ingredient_id}
+                    <Select
+                        value={data.ingredient_id}
+                        onValueChange={(value) =>
+                            setData('ingredient_id', value)
+                        }
                     >
-                        <SelectValue placeholder="Select ingredient" />
-                    </SelectTrigger>
+                        <SelectTrigger
+                            id="ingredient_id"
+                            aria-invalid={!!errors.ingredient_id}
+                        >
+                            <SelectValue placeholder="Select ingredient" />
+                        </SelectTrigger>
 
-                    <SelectContent>
-                        {ingredients.map((ingredient) => (
-                            <SelectItem
-                                key={ingredient.id}
-                                value={String(ingredient.id)}
-                            >
-                                {ingredient.name} (
-                                {ingredient.unit.symbol})
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                        <SelectContent>
+                            {ingredients.map((ingredient) => (
+                                <SelectItem
+                                    key={ingredient.id}
+                                    value={String(ingredient.id)}
+                                >
+                                    {ingredient.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
 
-                <FieldError>
-                    {errors.ingredient_id}
-                </FieldError>
-            </Field>
+                    <FieldError>
+                        {errors.ingredient_id}
+                    </FieldError>
+                </Field>
+
+                <Field>
+                    <FieldLabel htmlFor="unit">
+                        Unit
+                    </FieldLabel>
+
+                    <Input
+                        id="unit"
+                        value={selectedIngredient?.unit.symbol ?? ''}
+                        placeholder="—"
+                        disabled
+                    />
+                </Field>
+            </div>
 
             {/* Quantity + Unit Price */}
             <div className="grid gap-6 md:grid-cols-2">
                 <Field data-invalid={!!errors.quantity}>
                     <FieldLabel htmlFor="quantity">
                         Quantity
-                        {selectedIngredient && (
-                            <span className="ml-1 text-muted-foreground">
-                                ({selectedIngredient.unit.symbol})
-                            </span>
-                        )}
                     </FieldLabel>
 
                     <Input
@@ -186,15 +161,8 @@ export default function PurchaseItemForm({
             </div>
 
             <Button type="submit" disabled={processing}>
-                {processing ? (
-                    <Spinner />
-                ) : isEditing ? (
-                    <Save />
-                ) : (
-                    <Plus />
-                )}
-
-                {isEditing ? 'Save Changes' : 'Add Item'}
+                {processing ? <Spinner /> : <Plus />}
+                Add Item
             </Button>
         </form>
     );

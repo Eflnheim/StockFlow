@@ -50,7 +50,7 @@ export default function Create() {
                         </h1>
 
                         <p className="text-muted-foreground">
-                            Add a new category for your ingredients.
+                            Add a new category for ingredients.
                         </p>
                     </div>
                 </div>

@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
+import { useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -17,17 +17,7 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
-
-type SaleItem = {
-    id: number;
-    quantity: string;
-    unit_price: string;
-    recipe: {
-        id: number;
-        name: string;
-        selling_price: string;
-    };
-};
+import type { SaleItem } from '@/types/sales';
 
 type Props = {
     saleId: number;
@@ -75,15 +65,12 @@ export function SaleItemEditDialog({
             return;
         }
 
-        put(
-            `/sales/${saleId}/items/${item.id}`,
-            {
-                onSuccess: () => {
-                    onOpenChange(false);
-                    reset();
-                },
+        put(`/sales/${saleId}/items/${item.id}`, {
+            onSuccess: () => {
+                onOpenChange(false);
+                reset();
             },
-        );
+        });
     };
 
     return (

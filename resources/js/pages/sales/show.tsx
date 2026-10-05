@@ -10,16 +10,7 @@ import { useState } from 'react';
 
 import { SaleItemDialog } from '@/pages/sales/components/sale-item-dialog';
 import { SaleItemEditDialog } from '@/pages/sales/components/sale-item-edit-dialog';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,45 +20,19 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { usePermissions } from '@/hooks/use-permissions';
-
-type Customer = {
-    id: number;
-    name: string;
-};
-
-type User = {
-    id: number;
-    name: string;
-};
-
-type Recipe = {
-    id: number;
-    name: string;
-    selling_price: string;
-};
-
-type SaleItem = {
-    id: number;
-    quantity: string;
-    unit_price: string;
-    recipe: Recipe;
-};
-
-type Sale = {
-    id: number;
-    invoice_number: string;
-    sale_date: string;
-    total_amount: string;
-    status: string;
-    notes: string | null;
-    customer: Customer | null;
-    user: User;
-    items: SaleItem[];
-};
+import { SaleItemTable } from '@/pages/sales/components/sale-item-table';
+import type {
+    SaleItem,
+    SaleWithItems,
+} from '@/types/sales';
 
 type Props = {
-    sale: Sale;
-    recipes: Recipe[];
+    sale: SaleWithItems;
+    recipes: {
+        id: number;
+        name: string;
+        selling_price: string;
+    }[];
 };
 
 function formatCurrency(value: string | number): string {
@@ -103,12 +68,6 @@ export default function Show({ sale, recipes }: Props) {
     const [editDialogOpen, setEditDialogOpen] =
         useState(false);
 
-    const [deletingItem, setDeletingItem] =
-        useState<SaleItem | null>(null);
-
-    const [deleteItemDialogOpen, setDeleteItemDialogOpen] =
-        useState(false);
-
     const [deleteSaleDialogOpen, setDeleteSaleDialogOpen] =
         useState(false);
 
@@ -133,11 +92,17 @@ export default function Show({ sale, recipes }: Props) {
     const canCancel =
         can('update', 'sales') && isCompleted;
 
+    const openEditItemDialog = (item: SaleItem) => {
+        setEditingItem(item);
+        setEditDialogOpen(true);
+    };
+
     return (
         <>
             <Head title={sale.invoice_number} />
 
             <div className="space-y-6">
+                {/* Header */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="space-y-3">
                         <Button
@@ -194,6 +159,7 @@ export default function Show({ sale, recipes }: Props) {
                                     }
                                 >
                                     <Check />
+
                                     <span className="hidden sm:inline">
                                         Complete Sale
                                     </span>
@@ -212,6 +178,7 @@ export default function Show({ sale, recipes }: Props) {
                                     }
                                 >
                                     <Ban />
+
                                     <span className="hidden sm:inline">
                                         Cancel Sale
                                     </span>
@@ -228,6 +195,7 @@ export default function Show({ sale, recipes }: Props) {
                                         href={`/sales/${sale.id}/edit`}
                                     >
                                         <Pencil />
+
                                         <span className="hidden sm:inline">
                                             Edit
                                         </span>
@@ -247,6 +215,7 @@ export default function Show({ sale, recipes }: Props) {
                                     }
                                 >
                                     <Trash2 />
+
                                     <span className="hidden sm:inline">
                                         Delete
                                     </span>
@@ -256,6 +225,7 @@ export default function Show({ sale, recipes }: Props) {
                     )}
                 </div>
 
+                {/* Sale Details */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Sale Details</CardTitle>
@@ -323,6 +293,7 @@ export default function Show({ sale, recipes }: Props) {
                     </CardContent>
                 </Card>
 
+                {/* Sale Items */}
                 <Card>
                     <CardHeader>
                         <div className="flex items-center justify-between gap-4">
@@ -376,176 +347,19 @@ export default function Show({ sale, recipes }: Props) {
                                 )}
                             </div>
                         ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="border-b text-left">
-                                            <th className="px-2 py-3 font-medium">
-                                                #
-                                            </th>
-
-                                            <th className="px-2 py-3 font-medium">
-                                                Recipe
-                                            </th>
-
-                                            <th className="px-2 py-3 text-right font-medium">
-                                                Quantity
-                                            </th>
-
-                                            <th className="px-2 py-3 text-right font-medium">
-                                                Unit Price
-                                            </th>
-
-                                            <th className="px-2 py-3 text-right font-medium">
-                                                Subtotal
-                                            </th>
-
-                                            {(canEdit ||
-                                                canRemove) && (
-                                                <th className="px-2 py-3 text-right font-medium">
-                                                    Actions
-                                                </th>
-                                            )}
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-                                        {sale.items.map(
-                                            (item, index) => {
-                                                const subtotal =
-                                                    Number(
-                                                        item.quantity,
-                                                    ) *
-                                                    Number(
-                                                        item.unit_price,
-                                                    );
-
-                                                return (
-                                                    <tr
-                                                        key={
-                                                            item.id
-                                                        }
-                                                        className="border-b last:border-0"
-                                                    >
-                                                        <td className="px-2 py-3">
-                                                            {index +
-                                                                1}
-                                                        </td>
-
-                                                        <td className="px-2 py-3 font-medium">
-                                                            {
-                                                                item
-                                                                    .recipe
-                                                                    .name
-                                                            }
-                                                        </td>
-
-                                                        <td className="px-2 py-3 text-right">
-                                                            {Number(
-                                                                item.quantity,
-                                                            )}
-                                                        </td>
-
-                                                        <td className="px-2 py-3 text-right">
-                                                            {formatCurrency(
-                                                                item.unit_price,
-                                                            )}
-                                                        </td>
-
-                                                        <td className="px-2 py-3 text-right font-medium">
-                                                            {formatCurrency(
-                                                                subtotal,
-                                                            )}
-                                                        </td>
-
-                                                        {(canEdit ||
-                                                            canRemove) && (
-                                                            <td className="px-2 py-3 text-right">
-                                                                <div className="flex justify-end gap-2">
-                                                                    {canEdit && (
-                                                                        <Button
-                                                                            variant="outline"
-                                                                            size="sm"
-                                                                            onClick={() => {
-                                                                                setEditingItem(
-                                                                                    item,
-                                                                                );
-                                                                                setEditDialogOpen(
-                                                                                    true,
-                                                                                );
-                                                                            }}
-                                                                        >
-                                                                            <Pencil />
-
-                                                                            <span className="hidden sm:inline">
-                                                                                Edit
-                                                                            </span>
-                                                                        </Button>
-                                                                    )}
-
-                                                                    {canRemove && (
-                                                                        <Button
-                                                                            variant="outline"
-                                                                            size="sm"
-                                                                            className="text-destructive hover:text-destructive"
-                                                                            onClick={() => {
-                                                                                setDeletingItem(
-                                                                                    item,
-                                                                                );
-                                                                                setDeleteItemDialogOpen(
-                                                                                    true,
-                                                                                );
-                                                                            }}
-                                                                        >
-                                                                            <Trash2 />
-
-                                                                            <span className="hidden sm:inline">
-                                                                                Delete
-                                                                            </span>
-                                                                        </Button>
-                                                                    )}
-                                                                </div>
-                                                            </td>
-                                                        )}
-                                                    </tr>
-                                                );
-                                            },
-                                        )}
-                                    </tbody>
-
-                                    <tfoot>
-                                        <tr>
-                                            <td
-                                                colSpan={
-                                                    canEdit ||
-                                                    canRemove
-                                                        ? 4
-                                                        : 3
-                                                }
-                                                className="px-2 py-4 text-right font-medium"
-                                            >
-                                                Total
-                                            </td>
-
-                                            <td className="px-2 py-4 text-right text-base font-semibold">
-                                                {formatCurrency(
-                                                    sale.total_amount,
-                                                )}
-                                            </td>
-
-                                            {(canEdit ||
-                                                canRemove) && (
-                                                <td />
-                                            )}
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
+                            <SaleItemTable
+                                saleId={sale.id}
+                                items={sale.items}
+                                canEdit={canEdit}
+                                canRemove={canRemove}
+                                onEdit={openEditItemDialog}
+                            />
                         )}
                     </CardContent>
                 </Card>
             </div>
 
+            {/* Add Sale Item */}
             <SaleItemDialog
                 saleId={sale.id}
                 recipes={recipes}
@@ -553,6 +367,7 @@ export default function Show({ sale, recipes }: Props) {
                 onOpenChange={setItemDialogOpen}
             />
 
+            {/* Edit Sale Item */}
             <SaleItemEditDialog
                 saleId={sale.id}
                 item={editingItem}
@@ -565,63 +380,6 @@ export default function Show({ sale, recipes }: Props) {
                     }
                 }}
             />
-
-            {/* Delete Sale Item */}
-            <AlertDialog
-                open={deleteItemDialogOpen}
-                onOpenChange={(open) => {
-                    setDeleteItemDialogOpen(open);
-
-                    if (!open) {
-                        setDeletingItem(null);
-                    }
-                }}
-            >
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            Delete Sale Item?
-                        </AlertDialogTitle>
-
-                        <AlertDialogDescription>
-                            {deletingItem
-                                ? `This will remove "${deletingItem.recipe.name}" from this sale. The sale total will be recalculated.`
-                                : 'This will remove the selected item from this sale.'}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>
-                            Cancel
-                        </AlertDialogCancel>
-
-                        <AlertDialogAction
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            onClick={() => {
-                                if (!deletingItem) {
-                                    return;
-                                }
-
-                                router.delete(
-                                    `/sales/${sale.id}/items/${deletingItem.id}`,
-                                    {
-                                        onSuccess: () => {
-                                            setDeleteItemDialogOpen(
-                                                false,
-                                            );
-                                            setDeletingItem(
-                                                null,
-                                            );
-                                        },
-                                    },
-                                );
-                            }}
-                        >
-                            Delete
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
 
             {/* Delete Pending Sale */}
             <AlertDialog

@@ -2,16 +2,8 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { usePermissions } from '@/hooks/use-permissions';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import type { Unit } from '@/types/ingredients';
+
 import {
     AlertDialog,
     AlertDialogAction,
@@ -22,12 +14,19 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import { Spinner } from '@/components/ui/spinner';
 
-interface Unit {
-    id: number;
-    name: string;
-    symbol: string;
-}
+import { PageHeader } from '@/components/page-header';
 
 interface Props {
     units: Unit[];
@@ -62,17 +61,10 @@ export default function Index({ units }: Props) {
 
             <div className="space-y-6">
                 {/* Page Header */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-2xl font-semibold tracking-tight">
-                            Units
-                        </h1>
-
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            Manage the units used to measure ingredients.
-                        </p>
-                    </div>
-
+                <PageHeader
+                    title="Units"
+                    description="Manage the units used to measure ingredients."
+                >
                     {can('create', 'units') && (
                         <Button asChild>
                             <Link href="/units/create">
@@ -81,7 +73,7 @@ export default function Index({ units }: Props) {
                             </Link>
                         </Button>
                     )}
-                </div>
+                </PageHeader>
 
                 {/* Units Card */}
                 {units.length === 0 ? (
@@ -147,7 +139,7 @@ export default function Index({ units }: Props) {
                                         </TableCell>
 
                                         <TableCell>
-                                            <Badge variant="secondary" className="font-mono">
+                                            <Badge variant="secondary" >
                                                 {unit.symbol}
                                             </Badge>
                                         </TableCell>
@@ -226,9 +218,10 @@ export default function Index({ units }: Props) {
                             <AlertDialogAction
                                 disabled={processing}
                                 onClick={handleDelete}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                                {processing ? 'Deleting...' : 'Delete'}
+                                variant="destructive"
+                            >   
+                                {processing && <Spinner />}
+                                {processing ? 'Deleting' : 'Delete'}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>

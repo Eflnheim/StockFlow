@@ -2,6 +2,8 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { usePermissions } from '@/hooks/use-permissions';
+import type { IngredientCategory } from '@/types/ingredients';
+
 import {
     AlertDialog,
     AlertDialogAction,
@@ -13,6 +15,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import {
     Table,
     TableBody,
@@ -22,21 +25,17 @@ import {
     TableRow,
 } from '@/components/ui/table';
 
-interface Category {
-    id: number;
-    name: string;
-    created_at: string;
-    updated_at: string;
-}
+import { PageHeader } from '@/components/page-header';
 
 interface Props {
-    categories: Category[];
+    categories: IngredientCategory[];
 }
 
 export default function Index({ categories }: Props) {
     const { delete: destroy, processing } = useForm();
 
-    const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+    const [categoryToDelete, setCategoryToDelete] =
+        useState<IngredientCategory | null>(null);
 
     const handleDelete = () => {
         if (!categoryToDelete) {
@@ -62,17 +61,10 @@ export default function Index({ categories }: Props) {
 
             <div className="space-y-6">
                 {/* Page Header */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-2xl font-semibold tracking-tight">
-                            Ingredient Categories
-                        </h1>
-
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            Manage the categories used to organize ingredients.
-                        </p>
-                    </div>
-
+                <PageHeader
+                    title="Ingredient Categories"
+                    description="Manage the categories used to organize ingredients."
+                >
                     {can('create', 'ingredient-categories') && (
                         <Button asChild>
                             <Link href="/ingredient-categories/create">
@@ -81,9 +73,9 @@ export default function Index({ categories }: Props) {
                             </Link>
                         </Button>
                     )}
-                </div>
+                </PageHeader>
 
-                {/* Categories Card */}
+                {/* List of Categories */}
                 {categories.length === 0 ? (
                     <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
                         <div className="mb-4 rounded-full bg-muted p-3">
@@ -109,6 +101,7 @@ export default function Index({ categories }: Props) {
                         )}
                     </div>
                 ) : (
+
                     <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
@@ -138,11 +131,9 @@ export default function Index({ categories }: Props) {
                                             </TableCell>
 
                                             <TableCell>
-                                                <div className="flex items-center gap-3">
-                                                    <span className="font-medium">
-                                                        {category.name}
-                                                    </span>
-                                                </div>
+                                                <span className="font-medium">
+                                                    {category.name}
+                                                </span>
                                             </TableCell>
                                             {canManageCategories && (
                                                 <TableCell>
@@ -221,8 +212,9 @@ export default function Index({ categories }: Props) {
                             <AlertDialogAction
                                 disabled={processing}
                                 onClick={handleDelete}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                variant="destructive"
                             >
+                                {processing && <Spinner />}
                                 {processing ? 'Deleting...' : 'Delete'}
                             </AlertDialogAction>
                         </AlertDialogFooter>

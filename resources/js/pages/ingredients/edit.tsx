@@ -1,8 +1,11 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEvent } from 'react';
-import {
-    ArrowLeft,
-} from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import type {
+    Ingredient,
+    IngredientCategory,
+    Unit,
+} from '@/types/ingredients';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -19,7 +22,6 @@ import {
     FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Spinner } from '@/components/ui/spinner';
 import {
     Select,
     SelectContent,
@@ -27,30 +29,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-
-interface Category {
-    id: number;
-    name: string;
-}
-
-interface Unit {
-    id: number;
-    name: string;
-    symbol: string;
-}
-
-interface Ingredient {
-    id: number;
-    ingredient_category_id: number;
-    unit_id: number;
-    name: string;
-    minimum_stock: string;
-    is_active: boolean;
-}
+import { Spinner } from '@/components/ui/spinner';
 
 interface Props {
     ingredient: Ingredient;
-    categories: Category[];
+    categories: IngredientCategory[];
     units: Unit[];
 }
 
@@ -71,7 +54,6 @@ export default function Edit({
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
-
         put(`/ingredients/${ingredient.id}`);
     };
 

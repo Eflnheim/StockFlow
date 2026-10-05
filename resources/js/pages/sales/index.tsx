@@ -1,9 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import {
-    Eye,
-    Plus,
-    Trash2,
-} from 'lucide-react';
+import { Eye, Plus, Trash2, Pencil } from 'lucide-react';
 import { useState } from 'react';
 
 import {
@@ -27,20 +23,8 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { usePermissions } from '@/hooks/use-permissions';
-
-type Customer = {
-    id: number;
-    name: string;
-};
-
-type Sale = {
-    id: number;
-    invoice_number: string;
-    sale_date: string;
-    total_amount: string;
-    status: string;
-    customer: Customer | null;
-};
+import { PageHeader } from '@/components/page-header';
+import type { Sale } from '@/types/sales';
 
 type Props = {
     sales: Sale[];
@@ -60,10 +44,17 @@ function formatDate(value: string): string {
     }).format(new Date(value));
 }
 
+function formatStatus(status: string): string {
+    return status
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 export default function Index({ sales }: Props) {
     const { can } = usePermissions();
 
     const canCreate = can('create', 'sales');
+    const canEdit = can('update', 'sales');
     const canDelete = can('delete', 'sales');
 
     const [saleToDelete, setSaleToDelete] =
@@ -79,17 +70,10 @@ export default function Index({ sales }: Props) {
             <Head title="Sales" />
 
             <div className="space-y-6">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                        <h1 className="text-2xl font-semibold tracking-tight">
-                            Sales
-                        </h1>
-
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            Manage customer sales and transactions.
-                        </p>
-                    </div>
-
+                <PageHeader
+                    title="Sales"
+                    description="Manage customer sales and transactions."
+                >
                     {canCreate && (
                         <Button asChild>
                             <Link href="/sales/create">
@@ -98,7 +82,7 @@ export default function Index({ sales }: Props) {
                             </Link>
                         </Button>
                     )}
-                </div>
+                </PageHeader>
 
                 {sales.length === 0 ? (
                     <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
@@ -197,19 +181,10 @@ export default function Index({ sales }: Props) {
                                         </TableCell>
 
                                         <TableCell>
-                                            <Badge
-                                                variant="secondary"
-                                            >
-                                                {sale.status
-                                                    .replace(
-                                                        /_/g,
-                                                        ' ',
-                                                    )
-                                                    .replace(
-                                                        /\b\w/g,
-                                                        (char) =>
-                                                            char.toUpperCase(),
-                                                    )}
+                                            <Badge variant="secondary">
+                                                {formatStatus(
+                                                    sale.status,
+                                                )}
                                             </Badge>
                                         </TableCell>
 
@@ -229,6 +204,21 @@ export default function Index({ sales }: Props) {
                                                         </span>
                                                     </Link>
                                                 </Button>
+
+                                                {canEdit && sale.status === 'pending' && (
+                                                    <Button
+                                                        asChild
+                                                        variant="outline"
+                                                        size="sm"
+                                                    >
+                                                        <Link href={`/sales/${sale.id}/edit`}>
+                                                            <Pencil />
+                                                            <span className="hidden sm:inline">
+                                                                Edit
+                                                            </span>
+                                                        </Link>
+                                                    </Button>
+                                                )}
 
                                                 {canDelete && (
                                                     <Button

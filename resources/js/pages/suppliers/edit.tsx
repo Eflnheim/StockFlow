@@ -1,6 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEvent } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import type { Supplier } from '@/types/suppliers';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -25,16 +26,6 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-
-interface Supplier {
-    id: number;
-    name: string;
-    contact_person: string | null;
-    phone: string | null;
-    email: string | null;
-    address: string | null;
-    is_active: boolean;
-}
 
 interface Props {
     supplier: Supplier;
@@ -89,7 +80,7 @@ export default function Edit({ supplier }: Props) {
                         <CardTitle>Supplier Details</CardTitle>
 
                         <CardDescription>
-                            Update the supplier's contact and business
+                            Update the supplier's contact
                             information.
                         </CardDescription>
                     </CardHeader>
@@ -118,7 +109,6 @@ export default function Edit({ supplier }: Props) {
                                         }
                                         placeholder="e.g. Fresh Food Supplier"
                                         aria-invalid={!!errors.name}
-                                        autoFocus
                                     />
 
                                     {errors.name && (
